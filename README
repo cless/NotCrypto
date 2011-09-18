@@ -1,0 +1,4 @@
+NotCrypto is not a cryptographic library that you should ever use.  All code in
+this repository is written for educational purposes by an amateur.  No code was
+ever audited by professional cryptographers.  You should consider this code
+completely insecure and unable to fulfil any cryptographic purpose.
