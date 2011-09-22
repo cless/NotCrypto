@@ -165,7 +165,7 @@ void sha1_update(struct sha1_context *ctx, const uint8_t *buffer, size_t len)
     }
 }
 
-void sha1_final(struct sha1_context *ctx, uint8_t *hash, int hashtype)
+void sha1_final(struct sha1_context *ctx, uint8_t *hash)
 {
     // Apply padding and feed it into the update function
     uint64_t len = ctx->len * 8;
@@ -181,22 +181,14 @@ void sha1_final(struct sha1_context *ctx, uint8_t *hash, int hashtype)
     for(int i = 0; i < 5; i++)
         sha1_endianswap(&ctx->state[i], sizeof(uint32_t));
     
-    // Export the hash
-    if(hashtype == SHA1_BIN)
-        memcpy(hash, ctx->state, 20);
-    else
-    {
-        hash[0] = '\0';
-        for(int i = 0; i < 20; i++)
-            hash += sprintf((char *)hash, "%02x", ((uint8_t *)ctx->state)[i]);
-    }
+    memcpy(hash, ctx->state, 20);
     memset(ctx, 0, sizeof(struct sha1_context));
 }
 
-void sha1(uint8_t *buffer, size_t len, uint8_t *hash, int hashtype)
+void sha1(const uint8_t *buffer, size_t len, uint8_t *hash)
 {
     struct sha1_context ctx;
     sha1_init(&ctx);
     sha1_update(&ctx, buffer, len);
-    sha1_final(&ctx, hash, hashtype);
+    sha1_final(&ctx, hash);
 }

@@ -27,12 +27,11 @@
  * the implementation is correct but you should assume there are errors in it.
  */
 
-#include <stdio.h>
 #include <string.h>
 #include "md2.h"
 
 // 256 byte table derived from digits of pi as provided by RFC 1319
-static unsigned char sub_table[256] = {
+static const uint8_t sub_table[256] = {
     0x29, 0x2e, 0x43, 0xc9, 0xa2, 0xd8, 0x7c, 0x01,
     0x3d, 0x36, 0x54, 0xa1, 0xec, 0xf0, 0x06, 0x13,
     0x62, 0xa7, 0x05, 0xf3, 0xc0, 0xc7, 0x73, 0x8c,
@@ -72,18 +71,18 @@ void md2_init(struct md2_context *ctx)
 }
 
 // Update the checksum with 1 block worth of data
-static void md2_update_checksum(struct md2_context *ctx, const unsigned char *buffer)
+static void md2_update_checksum(struct md2_context *ctx, const uint8_t *buffer)
 {
     for(int i = 0; i < 16; i++)
     {
-        unsigned char c = buffer[i];
+        uint8_t c = buffer[i];
         ctx->checksum[i] ^= sub_table[c ^ ctx->L];
         ctx->L = ctx->checksum[i];
     }
 }
 
 // Update the MD buffer with 1 block worth of data
-static void md2_update_mdbuffer(struct md2_context *ctx, const unsigned char *buffer)
+static void md2_update_mdbuffer(struct md2_context *ctx, const uint8_t *buffer)
 {
     for(int i = 0; i < 16; i++)
     {
@@ -91,7 +90,7 @@ static void md2_update_mdbuffer(struct md2_context *ctx, const unsigned char *bu
         ctx->mdbuffer[32 + i] = buffer[i] ^ ctx->mdbuffer[i];
     }
 
-    unsigned char t = 0;
+    uint8_t t = 0;
     for(int i = 0; i < 18; i++)
     {
         for(int j = 0; j < 48; j++)
@@ -104,13 +103,13 @@ static void md2_update_mdbuffer(struct md2_context *ctx, const unsigned char *bu
     t = 0;
 }
 
-static void md2_update_block(struct md2_context *ctx, const unsigned char *buffer)
+static void md2_update_block(struct md2_context *ctx, const uint8_t *buffer)
 {
     md2_update_checksum(ctx, buffer);
     md2_update_mdbuffer(ctx, buffer);
 }
 
-void md2_update(struct md2_context *ctx, const unsigned char *buffer, size_t len)
+void md2_update(struct md2_context *ctx, const uint8_t *buffer, size_t len)
 {
     // If our context has overflow bytes from the last update then extend those
     // until the overflow buffer has 16 bytes in it so we can process the block
@@ -146,10 +145,10 @@ void md2_update(struct md2_context *ctx, const unsigned char *buffer, size_t len
     }
 }
 
-void md2_final(struct md2_context *ctx, unsigned char *hash, int hashtype)
+void md2_final(struct md2_context *ctx, uint8_t *hash)
 {
     // Apply padding to the internal buffer
-    unsigned char pad = 16 - ctx->bufused;
+    uint8_t pad = 16 - ctx->bufused;
     for(int i = ctx->bufused; i < 16; i++)
     {
         ctx->buffer[i] = pad;
@@ -161,23 +160,14 @@ void md2_final(struct md2_context *ctx, unsigned char *hash, int hashtype)
     // Update mdbuffer with the checksum
     md2_update_mdbuffer(ctx, ctx->checksum);
     
-    if(hashtype == MD2_BIN)
-    {
-        memcpy(hash, ctx->mdbuffer, 16);
-    }
-    else
-    {
-        hash[0] = '\0';
-        for(int i = 0; i < 16; i++)
-            sprintf((char *)hash, "%s%02x", (char *)hash, ctx->mdbuffer[i]);
-    }
+    memcpy(hash, ctx->mdbuffer, 16);
     memset(ctx, 0, sizeof(struct md2_context));
 }
 
-void md2(unsigned char *buffer, size_t len, unsigned char *hash, int hashtype)
+void md2(const uint8_t *buffer, size_t len, uint8_t *hash)
 {
     struct md2_context ctx;
     md2_init(&ctx);
     md2_update(&ctx, buffer, len);
-    md2_final(&ctx, hash, hashtype);
+    md2_final(&ctx, hash);
 }

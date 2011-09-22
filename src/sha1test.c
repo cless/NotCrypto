@@ -22,19 +22,21 @@
 #include <stdio.h>
 #include <string.h>
 #include "sha1.h"
+#include "hex.h"
 
 int main()
 {
-    char hash[41];
+    uint8_t hash[20];
+    char hexhash[41];
 
-    char *test_plain[] = {
-        "",
-        "a",
-        "abc",
-        "message digest",
-        "abcdefghijklmnopqrstuvwxyz",
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-        "12345678901234567890123456789012345678901234567890123456789012345678901234567890",
+    uint8_t *test_plain[] = {
+        (uint8_t *)"",
+        (uint8_t *)"a",
+        (uint8_t *)"abc",
+        (uint8_t *)"message digest",
+        (uint8_t *)"abcdefghijklmnopqrstuvwxyz",
+        (uint8_t *)"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+        (uint8_t *)"12345678901234567890123456789012345678901234567890123456789012345678901234567890",
         NULL};
     
     char *test_hash[] = {
@@ -50,9 +52,10 @@ int main()
     
     for(int i = 0; test_plain[i] && test_hash[i]; i++)
     {
-        sha1(test_plain[i], strlen(test_plain[i]), hash, SHA1_HEX);
-        printf("%s - \"%s\"", hash, test_plain[i]);
-        if(strcmp(hash, test_hash[i]) == 0)
+        sha1(test_plain[i], strlen((char *)test_plain[i]), hash);
+        hex_encode(hexhash, hash, 20);
+        printf("%s - \"%s\"", hexhash, test_plain[i]);
+        if(strcmp(hexhash, test_hash[i]) == 0)
             printf("\n");
         else
             printf("\n  ERROR! Expected %s\n\n", test_hash[i]);

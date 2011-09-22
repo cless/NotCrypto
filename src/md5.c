@@ -27,7 +27,6 @@
  * the implementation is correct but you should assume there are errors in it.
  */
 
-#include <stdio.h>
 #include <string.h>
 #include "md5.h"
 
@@ -77,7 +76,7 @@ void md5_init(struct md5_context *ctx)
     ctx->state[3] = 0x10325476;
 }
 
-static void md5_update_block(struct md5_context *ctx, const unsigned char *buffer)
+static void md5_update_block(struct md5_context *ctx, const uint8_t *buffer)
 {
     // Copy local buffers and states
     uint32_t locbuf[16];
@@ -173,7 +172,7 @@ static void md5_update_block(struct md5_context *ctx, const unsigned char *buffe
     d = 0;
 }
 
-void md5_update(struct md5_context *ctx, const unsigned char *buffer, size_t len)
+void md5_update(struct md5_context *ctx, const uint8_t *buffer, size_t len)
 {
     ctx->len += len;
 
@@ -210,35 +209,25 @@ void md5_update(struct md5_context *ctx, const unsigned char *buffer, size_t len
     }
 }
 
-void md5_final(struct md5_context *ctx, unsigned char *hash, int hashtype)
+void md5_final(struct md5_context *ctx, uint8_t *hash)
 {
     // Apply padding and feed it into the update function
     uint64_t len = ctx->len * 8;
     size_t padlen = 64 - ((ctx->len + 8) % 64);
-    unsigned char padding[64] = {0};
+    uint8_t padding[64] = {0};
     padding[0] = 0x80;
 
     md5_update(ctx, padding, padlen);
-    md5_update(ctx, (unsigned char *)&len, 8);
+    md5_update(ctx, (uint8_t *)&len, 8);
     
-    // Export the hash
-    if(hashtype == MD5_BIN)
-    {
-        memcpy(hash, (unsigned char *)ctx->state, 16);
-    }
-    else
-    {
-        hash[0] = '\0';
-        for(int i = 0; i < 16; i++)
-            sprintf((char *)hash, "%s%02x", (char *)hash, ((unsigned char *)ctx->state)[i]);
-    }
+    memcpy(hash, (uint8_t *)ctx->state, 16);
     memset(ctx, 0, sizeof(struct md5_context));
 }
 
-void md5(unsigned char *buffer, size_t len, unsigned char *hash, int hashtype)
+void md5(const uint8_t *buffer, size_t len, uint8_t *hash)
 {
     struct md5_context ctx;
     md5_init(&ctx);
     md5_update(&ctx, buffer, len);
-    md5_final(&ctx, hash, hashtype);
+    md5_final(&ctx, hash);
 }

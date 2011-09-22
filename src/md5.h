@@ -21,24 +21,24 @@
 #ifndef __NOTCRYPTO_MD5_H_
 #define __NOTCRYPTO_MD5_H_
 
-#include <stdint.h>
+# include <stdint.h>
+# include <stddef.h>
 
-#warning "This code is insecure and should never be used. See README for more information."
-
-#define MD5_HEX 0
-#define MD5_BIN 1
+# ifndef NOTCRYPTO_DISABLE_WARNING
+#  warning "This code is insecure and should never be used. See README for more information."
+# endif
 
 struct md5_context
 {
-    unsigned char buffer[64];
+    uint8_t buffer[64];
     uint32_t state[4];
     size_t bufused;
     uint64_t len;
 };
 
 void md5_init(struct md5_context *ctx);
-void md5_update(struct md5_context *ctx, const unsigned char *buffer, size_t len);
-void md5_final(struct md5_context *ctx, unsigned char *hash, int hashtype);
-void md5(unsigned char *buffer, size_t len, unsigned char *hash, int hashtype);
+void md5_update(struct md5_context *ctx, const uint8_t *buffer, size_t len);
+void md5_final(struct md5_context *ctx, uint8_t *hash);
+void md5(const uint8_t *buffer, size_t len, uint8_t *hash);
 
 #endif

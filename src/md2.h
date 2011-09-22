@@ -22,23 +22,25 @@
 #ifndef __NOTCRYPTO_MD2_H_
 #define __NOTCRYPTO_MD2_H_
 
-#warning "This code is insecure and should never be used. See README for more information."
+# include <stddef.h>
+# include <stdint.h>
 
-#define MD2_HEX 0
-#define MD2_BIN 1
+# ifndef NOTCRYPTO_DISABLE_WARNING
+#  warning "This code is insecure and should never be used. See README for more information."
+# endif
 
 struct md2_context
 {
-    unsigned char checksum[16];
-    unsigned char mdbuffer[48];
-    unsigned char buffer[16];
-    unsigned char L;
+    uint8_t checksum[16];
+    uint8_t mdbuffer[48];
+    uint8_t buffer[16];
+    uint8_t L;
     size_t bufused;
 };
 
 void md2_init(struct md2_context *ctx);
-void md2_update(struct md2_context *ctx, const unsigned char *buffer, size_t len);
-void md2_final(struct md2_context *ctx, unsigned char *hash, int hashtype);
-void md2(unsigned char *buffer, size_t len, unsigned char *hash, int hashtype);
+void md2_update(struct md2_context *ctx, const uint8_t *buffer, size_t len);
+void md2_final(struct md2_context *ctx, uint8_t *hash);
+void md2(const uint8_t *buffer, size_t len, uint8_t *hash);
 
 #endif
