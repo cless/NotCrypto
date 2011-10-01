@@ -36,7 +36,7 @@ void hmac_makekey(struct hmac_context *ctx, const uint8_t *key, size_t keylen)
         // Hash the long key
         ctx->hash_init(&ctx->hashctx);
         ctx->hash_update(&ctx->hashctx, key, keylen);
-        ctx->hash_final(&ctx->hashctx, ctx->key, HMAC_BIN);
+        ctx->hash_final(&ctx->hashctx, ctx->key);
         keylen = ctx->hashsize;
     }
     else
@@ -80,6 +80,34 @@ void hmac_init(struct hmac_context *ctx, const uint8_t *key, size_t keylen, int 
             ctx->hash_update = (hashupdate_t)sha1_update;
             ctx->hash_final  = (hashfinal_t)sha1_final;
             break;
+        case HMAC_SHA2_224:
+            ctx->blocksize = 64;
+            ctx->hashsize  = 28;
+            ctx->hash_init   = (hashinit_t)sha2_224_init;
+            ctx->hash_update = (hashupdate_t)sha2_224_update;
+            ctx->hash_final  = (hashfinal_t)sha2_224_final;
+            break;
+        case HMAC_SHA2_256:
+            ctx->blocksize = 64;
+            ctx->hashsize  = 32;
+            ctx->hash_init   = (hashinit_t)sha2_256_init;
+            ctx->hash_update = (hashupdate_t)sha2_256_update;
+            ctx->hash_final  = (hashfinal_t)sha2_256_final;
+            break;
+        case HMAC_SHA2_384:
+            ctx->blocksize = 128;
+            ctx->hashsize  = 48;
+            ctx->hash_init   = (hashinit_t)sha2_384_init;
+            ctx->hash_update = (hashupdate_t)sha2_384_update;
+            ctx->hash_final  = (hashfinal_t)sha2_384_final;
+            break;
+        case HMAC_SHA2_512:
+            ctx->blocksize = 128;
+            ctx->hashsize  = 64;
+            ctx->hash_init   = (hashinit_t)sha2_512_init;
+            ctx->hash_update = (hashupdate_t)sha2_512_update;
+            ctx->hash_final  = (hashfinal_t)sha2_512_final;
+            break;
     }
 
     // Prepare the key
@@ -104,14 +132,14 @@ void hmac_final(struct hmac_context *ctx, const uint8_t *mac)
 {
     // Calculate the intermediate hash
     uint8_t intermediate[ctx->hashsize];
-    ctx->hash_final(&ctx->hashctx, intermediate, HMAC_BIN);
+    ctx->hash_final(&ctx->hashctx, intermediate);
     
     // create the outer hash
     hmac_xorkey(ctx, HMAC_OPAD);
     ctx->hash_init(&ctx->hashctx);
     ctx->hash_update(&ctx->hashctx, ctx->key, ctx->blocksize);
     ctx->hash_update(&ctx->hashctx, intermediate, ctx->hashsize);
-    ctx->hash_final(&ctx->hashctx, mac, HMAC_BIN);
+    ctx->hash_final(&ctx->hashctx, mac);
 }
 
 void hmac(const uint8_t *input, size_t inlen, uint8_t *key, size_t keylen, uint8_t *mac, int hashtype)

@@ -23,14 +23,12 @@
 # include <stddef.h>
 # include "md2.h"
 # include "md5.h"
-# include "sha1.h"
+# include "sha1.h" 
+# include "sha2.h"
 
 # ifndef NOTCRYPTO_DISABLE_WARNING
 #  warning "This code is insecure and should never be used. See README for more information."
 # endif
-
-# define HMAC_HEX 0
-# define HMAC_BIN 1
 
 # define HMAC_IPAD 0x36
 # define HMAC_OPAD 0x5C
@@ -39,12 +37,16 @@ enum hmac_hashfunctions
 {
     HMAC_MD2,
     HMAC_MD5,
-    HMAC_SHA1
+    HMAC_SHA1,
+    HMAC_SHA2_224,
+    HMAC_SHA2_256,
+    HMAC_SHA2_384,
+    HMAC_SHA2_512
 };
 
 typedef void (*hashinit_t)(void *);
 typedef void (*hashupdate_t)(void *, const uint8_t *, size_t);
-typedef void (*hashfinal_t)(void *, const uint8_t *, int);
+typedef void (*hashfinal_t)(void *, const uint8_t *);
 
 struct hmac_context
 {
@@ -54,11 +56,12 @@ struct hmac_context
         struct md2_context md2;
         struct md5_context md5;
         struct sha1_context sha1;
+        struct sha2_context sha2;
     } hashctx;
     hashinit_t hash_init;
     hashupdate_t hash_update;
     hashfinal_t hash_final;
-    uint8_t key[64];    // Make sure to upgrade this when introducing a hash algo with bigger blocksize
+    uint8_t key[128];    // Make sure to upgrade this when introducing a hash algo with bigger blocksize
     size_t hashsize;
     size_t blocksize;
 };
